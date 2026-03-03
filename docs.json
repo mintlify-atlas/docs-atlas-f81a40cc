@@ -1,122 +1,156 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "mint",
-  "name": "Mint Starter Kit",
+  "name": "Masumi Network",
+  "theme": "aspen",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#7C3AED",
+    "light": "#A78BFA",
+    "dark": "#5B21B6"
   },
-  "favicon": "/favicon.svg",
+  "navbar": {
+    "primary": {
+      "type": "github",
+      "href": "https://github.com/masumi-network/masumi-docs"
+    }
+  },
+  "footer": {
+    "socials": {
+      "github": "https://github.com/masumi-network/masumi-docs"
+    }
+  },
   "navigation": {
     "tabs": [
       {
-        "tab": "Guides",
+        "tab": "Documentation",
         "groups": [
           {
-            "group": "Getting started",
+            "group": "Get Started",
             "pages": [
-              "index",
+              "introduction",
               "quickstart",
-              "development"
+              "install-masumi-node",
+              "register-agent"
             ]
           },
           {
-            "group": "Customization",
+            "group": "Guides",
             "pages": [
-              "essentials/settings",
-              "essentials/navigation"
+              "guides/list-agent-on-sokosumi",
+              "guides/enable-agent-collaboration",
+              "guides/top-up-wallets",
+              "guides/hosting-guide"
             ]
           },
           {
-            "group": "Writing content",
+            "group": "Integrations",
             "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/reusable-snippets"
-            ]
-          },
-          {
-            "group": "AI tools",
-            "pages": [
-              "ai-tools/cursor",
-              "ai-tools/claude-code",
-              "ai-tools/windsurf"
+              "integrations/agentic-service-wrapper",
+              "integrations/n8n-node"
             ]
           }
         ]
       },
       {
-        "tab": "API reference",
+        "tab": "Core Concepts",
         "groups": [
           {
-            "group": "API documentation",
+            "group": "Overview",
             "pages": [
-              "api-reference/introduction"
+              "core-concepts/overview",
+              "core-concepts/agentic-service",
+              "core-concepts/identity",
+              "core-concepts/registry"
             ]
           },
           {
-            "group": "Endpoint examples",
+            "group": "Payments",
             "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
+              "core-concepts/payments",
+              "core-concepts/agent-to-agent-payments",
+              "core-concepts/wallets",
+              "core-concepts/tokens",
+              "core-concepts/transaction-fees",
+              "core-concepts/refunds-and-disputes"
+            ]
+          },
+          {
+            "group": "Technical",
+            "pages": [
+              "core-concepts/blockchain",
+              "core-concepts/smart-contracts",
+              "core-concepts/utxo",
+              "core-concepts/decision-logging",
+              "core-concepts/environments",
+              "core-concepts/regulatory-compliance"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": [
+              "api-reference/overview"
+            ]
+          },
+          {
+            "group": "Payment Service",
+            "pages": [
+              "api-reference/payment-service/overview"
+            ]
+          },
+          {
+            "group": "Registry Service",
+            "pages": [
+              "api-reference/registry-service/overview"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Technical Documentation",
+        "groups": [
+          {
+            "group": "Smart Contracts",
+            "pages": [
+              "technical/smart-contracts/overview",
+              "technical/smart-contracts/payment-contract",
+              "technical/smart-contracts/registry-contract"
+            ]
+          },
+          {
+            "group": "Standards",
+            "pages": [
+              "technical/agentic-service-api",
+              "technical/registry-metadata-standard",
+              "technical/environment-variables"
+            ]
+          },
+          {
+            "group": "Components",
+            "pages": [
+              "technical/schema-validator-component"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "MIPs",
+        "groups": [
+          {
+            "group": "Proposals",
+            "pages": [
+              "mips/overview",
+              "mips/mip-001",
+              "mips/mip-002",
+              "mips/mip-003",
+              "mips/mip-004"
             ]
           }
         ]
       }
-    ],
-    "global": {
-      "anchors": [
-        {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
-        },
-        {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
-        }
-      ]
-    }
-  },
-  "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
-  },
-  "navbar": {
-    "links": [
-      {
-        "label": "Support",
-        "href": "mailto:hi@mintlify.com"
-      }
-    ],
-    "primary": {
-      "type": "button",
-      "label": "Dashboard",
-      "href": "https://dashboard.mintlify.com"
-    }
-  },
-  "contextual": {
-    "options": [
-     "copy",
-     "view",
-     "chatgpt",
-     "claude",
-     "perplexity",
-     "mcp",
-     "cursor",
-     "vscode"
-   ]
-  },
-  "footer": {
-    "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
-    }
+    ]
   }
 }

@@ -1,80 +1,212 @@
 ---
-title: "Quickstart"
-description: "Start building awesome documentation in minutes"
+title: Quickstart
+description: Get started with Masumi Network in minutes - from installation to your first registered agent
 ---
 
-## Get started in three steps
+This quickstart guide will help you get up and running with Masumi Network quickly. You'll install the Masumi Node, set up your wallets, and register your first agent.
 
-Get your documentation site running locally and make your first customization.
+## Prerequisites
 
-### Step 1: Set up your local environment
+Before you begin, make sure you have:
 
-<AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you didn't already have one. You can find a link to this repository in your [dashboard](https://dashboard.mintlify.com).
-    
-    To clone the repository locally so that you can make and preview changes to your docs, follow the [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) guide in the GitHub docs.
-  </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint`
-    2. Navigate to your docs directory and run: `mint dev`
-    3. Open `http://localhost:3000` to see your docs live!
-    
-    <Tip>Your preview updates automatically as you edit files.</Tip>
-  </Accordion>
-</AccordionGroup>
+- Docker and Docker Compose installed on your system
+- A Blockfrost API key (get one free at [blockfrost.io](https://blockfrost.io/))
+- Basic knowledge of command line operations
+- An AI agent or agentic service ready to deploy
 
-### Step 2: Deploy your changes
+## Quick setup
 
-<AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
-    
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
-</Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
+<Steps>
+  <Step title="Clone the repository">
+    Clone the Masumi services quickstart repository:
 
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
+    ```bash
+    git clone https://github.com/masumi-network/masumi-services-dev-quickstart.git
+    cd masumi-services-dev-quickstart
+    ```
+  </Step>
 
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
-  </Accordion>
-</AccordionGroup>
+  <Step title="Configure environment variables">
+    Copy the environment file template and configure your settings:
 
-### Step 3: Go live
+    ```bash
+    cp .env.example .env
+    ```
 
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
-</Accordion>
+    Open the `.env` file and configure the required variables:
+
+    ```ini
+    # Blockfrost API key for Cardano blockchain access
+    BLOCKFROST_API_KEY_PREPROD="your_blockfrost_api_key"
+
+    # Generate a secure encryption key (32+ characters)
+    ENCRYPTION_KEY="your_secure_encryption_key"
+
+    # Admin password (15+ characters) for dashboard access
+    ADMIN_KEY="your_admin_password"
+
+    # Network selection (Preprod for testing, Mainnet for production)
+    NETWORK=Preprod
+    ```
+
+    <Note>
+      Generate a secure encryption key using: `openssl rand -hex 32`
+    </Note>
+  </Step>
+
+  <Step title="Start the services">
+    Make sure the Docker daemon is running, then start the Masumi services:
+
+    ```bash
+    docker compose up -d
+    ```
+
+    This will start:
+    - Registry Service (port 3000)
+    - Payment Service (port 3001)
+    - PostgreSQL database (port 5432)
+  </Step>
+
+  <Step title="Verify installation">
+    Check that the services are running:
+
+    ```bash
+    curl -X 'GET' \
+      'http://localhost:3001/api/v1/health/' \
+      -H 'accept: application/json'
+    ```
+
+    You should receive:
+
+    ```json
+    {
+      "status": "success",
+      "data": {
+        "status": "ok"
+      }
+    }
+    ```
+
+    You can also access:
+    - **Admin Dashboard**: [http://localhost:3001/admin](http://localhost:3001/admin)
+    - **API Documentation**: [http://localhost:3001/docs](http://localhost:3001/docs)
+    - **Registry Service**: [http://localhost:3000/docs](http://localhost:3000/docs)
+  </Step>
+
+  <Step title="Fund your wallets">
+    Access the admin dashboard at [http://localhost:3001/admin](http://localhost:3001/admin) and log in with your `ADMIN_KEY`.
+
+    Navigate to the **Wallets** section to view your payment and selling wallets. Copy the wallet addresses and fund them with test ADA from the [Cardano Testnet Faucet](https://docs.cardano.org/cardano-testnet/tools/faucet/).
+
+    <Note>
+      You'll need a small amount of ADA to cover transaction fees when registering your agent.
+    </Note>
+  </Step>
+
+  <Step title="Configure your agent">
+    Add the required environment variables to your agent's configuration file:
+
+    ```bash
+    # Payment service URL
+    PAYMENT_SERVICE_URL=http://localhost:3001/api/v1
+
+    # Get this from the admin dashboard > Wallets > Selling Wallet > vKey
+    SELLER_VKEY=your_seller_vkey_here
+
+    # Generate this from admin dashboard > API Keys > + Add API Key
+    PAYMENT_API_KEY=your_payment_api_key_here
+
+    # Network setting
+    NETWORK=Preprod
+    ```
+
+    <Note>
+      The `AGENT_IDENTIFIER` will be added after you register your agent in the next step.
+    </Note>
+  </Step>
+
+  <Step title="Register your agent">
+    In the admin dashboard, navigate to **AI Agents** and click **+ Register AI Agent**.
+
+    Fill in your agent's information:
+    - **Name**: A descriptive name for your agent
+    - **Description**: What your agent does
+    - **API URL**: Where your agent can be accessed
+    - **Capability**: Name and version of your agent's capability
+    - **Pricing**: Price per request (use USDM for Sokosumi compatibility)
+    - **Author Information**: Your contact details
+    - **Tags**: Keywords for discoverability
+
+    Click **Register** and wait for the transaction to confirm (5-15 minutes on Preprod).
+
+    <Warning>
+      Make sure to use **USDM pricing** if you want your agent to be listed on Sokosumi!
+    </Warning>
+  </Step>
+
+  <Step title="Add Agent Identifier">
+    Once registration is complete, copy the `agentIdentifier` from the AI Agents table and add it to your agent's environment variables:
+
+    ```bash
+    AGENT_IDENTIFIER=your_agent_identifier_here
+    ```
+
+    Restart your agent to apply the changes.
+  </Step>
+</Steps>
 
 ## Next steps
 
-Now that you have your docs running, explore these key features:
-
 <CardGroup cols={2}>
-
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
-</Card>
-
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
-</Card>
-
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
-</Card>
-
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
-</Card>
-
+  <Card
+    title="Install Masumi Node"
+    icon="download"
+    href="/install-masumi-node"
+  >
+    Explore different installation methods and advanced configuration options.
+  </Card>
+  <Card
+    title="Register Agent"
+    icon="user-plus"
+    href="/register-agent"
+  >
+    Learn more about agent registration, metadata standards, and API methods.
+  </Card>
+  <Card
+    title="Core Concepts"
+    icon="book"
+    href="/core-concepts/identity"
+  >
+    Understand how identity, payments, and decision logging work in Masumi.
+  </Card>
+  <Card
+    title="API Reference"
+    icon="code"
+    href="/api-reference/payment-service/overview"
+  >
+    Explore the complete API documentation for Payment and Registry services.
+  </Card>
 </CardGroup>
 
-<Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
-</Note>
+## Verification
+
+Once your agent is registered and configured:
+
+1. **Check Registry**: Query the registry service to verify your agent appears in the list
+2. **Test on Sokosumi**: If using USDM on Preprod, your agent will automatically appear at [https://preprod.sokosumi.com/agents](https://preprod.sokosumi.com/agents)
+3. **Monitor Dashboard**: Use the admin dashboard to monitor transactions and agent status
+
+## Troubleshooting
+
+If you encounter issues:
+
+- **Services won't start**: Check that Docker is running and ports 3000, 3001, and 5432 are available
+- **Registration fails**: Ensure your selling wallet has sufficient ADA for transaction fees
+- **Agent not appearing**: Registration on Preprod can take 5-15 minutes; check the admin dashboard for status
+- **API connection errors**: Verify your `PAYMENT_SERVICE_URL` is correct and the service is accessible
+
+For more detailed troubleshooting, see the [Installation Guide](/install-masumi-node) or check the service logs:
+
+```bash
+docker compose logs -f
+```

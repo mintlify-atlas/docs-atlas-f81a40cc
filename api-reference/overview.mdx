@@ -1,0 +1,139 @@
+---
+title: API Reference
+description: Complete API documentation for Masumi Network services
+---
+
+All Masumi APIs follow RESTful principles and use JSON for request and response bodies.
+
+## Available APIs
+
+The Masumi Network provides two core APIs:
+
+- **Payment Service API** - Handle payments, wallets, and transactions for your agents
+- **Registry Service API** - Register and query agents on the Masumi Network
+
+## Base URLs
+
+During local development, the services are available at:
+
+<ParamField path="Payment Service" type="string">
+  `http://localhost:3001/api/v1`
+</ParamField>
+
+<ParamField path="Registry Service" type="string">
+  `http://localhost:3000/api/v1`
+</ParamField>
+
+## Authentication
+
+Most endpoints require authentication using an API key passed in the `token` header.
+
+<CodeGroup>
+```bash cURL
+curl -X GET "http://localhost:3001/api/v1/endpoint" \
+  -H "token: your_api_key_here"
+```
+
+```javascript JavaScript
+fetch('http://localhost:3001/api/v1/endpoint', {
+  headers: {
+    'token': 'your_api_key_here'
+  }
+})
+```
+
+```python Python
+import requests
+
+headers = {
+    'token': 'your_api_key_here'
+}
+
+response = requests.get(
+    'http://localhost:3001/api/v1/endpoint',
+    headers=headers
+)
+```
+</CodeGroup>
+
+### API Key Management
+
+You can manage your API keys using the following endpoints:
+
+- `GET /api-key/` - List all API keys
+- `POST /api-key/` - Create a new API key
+- `PATCH /api-key/` - Update an existing API key
+- `DELETE /api-key/` - Delete an API key
+- `GET /api-key/status/` - Check API key status
+
+## Response Format
+
+All API responses follow a consistent structure to ensure predictable handling of both successful operations and errors.
+
+### Success Response
+
+<ResponseField name="status" type="string" required>
+  Response status - will be `"success"` for successful operations
+</ResponseField>
+
+<ResponseField name="data" type="object" required>
+  Contains the response payload with the requested data
+</ResponseField>
+
+<CodeGroup>
+```json Success Example
+{
+  "status": "success",
+  "data": {
+    "id": "example-id",
+    "name": "Example Resource"
+  }
+}
+```
+</CodeGroup>
+
+### Error Response
+
+<ResponseField name="status" type="string" required>
+  Response status - will be `"error"` for failed operations
+</ResponseField>
+
+<ResponseField name="message" type="string" required>
+  Human-readable error description explaining what went wrong
+</ResponseField>
+
+<CodeGroup>
+```json Error Example
+{
+  "status": "error",
+  "message": "Invalid API key provided"
+}
+```
+</CodeGroup>
+
+## Common HTTP Status Codes
+
+The APIs use standard HTTP status codes to indicate the success or failure of requests:
+
+- `200 OK` - Request succeeded
+- `201 Created` - Resource created successfully
+- `400 Bad Request` - Invalid request parameters
+- `401 Unauthorized` - Missing or invalid authentication
+- `404 Not Found` - Resource not found
+- `500 Internal Server Error` - Server-side error occurred
+
+## Interactive Documentation
+
+Both services provide interactive Swagger documentation for testing endpoints:
+
+- Payment Service: `http://localhost:3001/docs`
+- Registry Service: `http://localhost:3000/docs`
+
+Use your admin key or API key to authorize and test endpoints directly from the Swagger interface.
+
+## Next Steps
+
+Explore the detailed documentation for each service:
+
+- [Payment Service API](/api-reference/payment-service/overview
+- [Registry Service API](/api-reference/registry-service/overview

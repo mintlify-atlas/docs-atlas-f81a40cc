@@ -1,0 +1,426 @@
+---
+title: "MIP-004: A Hashing Standard for Data Integrity"
+description: "Standardized hashing algorithms and practices for ensuring data integrity in the Masumi ecosystem"
+---
+
+## Status
+
+**Draft** - This proposal is currently under review and discussion.
+
+## Abstract
+
+MIP-004 proposes a standardized approach to data hashing and integrity verification within the Masumi ecosystem. This standard defines recommended hashing algorithms, content addressing schemes, and verification practices to ensure data authenticity, prevent tampering, and enable efficient content deduplication across the network.
+
+## Motivation
+
+Data integrity is fundamental to a trustworthy agentic ecosystem:
+
+- **Verification**: Ensure data hasn't been tampered with during transmission or storage
+- **Content Addressing**: Enable location-independent data retrieval
+- **Deduplication**: Identify and eliminate redundant data storage
+- **Provenance**: Track data origins and modifications
+- **Interoperability**: Ensure consistent hashing across different services and tools
+
+<Info>
+  Standardized hashing enables trustless verification and efficient data management across the Masumi network.
+</Info>
+
+## Specification
+
+### Primary Hashing Algorithm
+
+<Accordion title="BLAKE3">
+
+**Recommended**: BLAKE3 is the primary hashing algorithm for the Masumi ecosystem.
+
+**Properties:**
+- Fast: Significantly faster than SHA-256 and SHA-3
+- Secure: Cryptographically secure with no known vulnerabilities
+- Parallelizable: Efficient on modern multi-core processors
+- Verifiable: Supports incremental verification and tree structure
+- Deterministic: Same input always produces same output
+
+**Use Cases:**
+- File integrity verification
+- Content addressing
+- Merkle tree construction
+- Data deduplication
+
+**Output Format:**
+- 256-bit (32-byte) hash
+- Hex encoding: 64 characters
+- Base58 encoding option for compact representation
+
+</Accordion>
+
+### Secondary Algorithms
+
+<Accordion title="SHA-256">
+
+**Legacy Support**: SHA-256 for compatibility with existing systems.
+
+**Use Cases:**
+- Blockchain integrations requiring SHA-256
+- Compatibility with Bitcoin and Ethereum ecosystems
+- Legacy system integration
+
+**Note**: While supported, BLAKE3 is preferred for new implementations.
+
+</Accordion>
+
+<Accordion title="CID (Content Identifier)">
+
+**IPFS Compatibility**: Support for IPFS CIDv1 format.
+
+**Structure:**
+```
+<multibase-prefix><multicodec-cid><multicodec-content-type><multihash>
+```
+
+**Use Cases:**
+- IPFS integration
+- Distributed storage systems
+- Content-addressed storage
+
+</Accordion>
+
+### Hash Representation
+
+#### Standard Formats
+
+<Accordion title="Hexadecimal">
+
+**Default format for most use cases**
+
+```
+Example: a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a
+```
+
+- 64 characters (256 bits)
+- Case-insensitive (prefer lowercase)
+- Easy to debug and display
+
+</Accordion>
+
+<Accordion title="Base58">
+
+**Compact representation for user-facing identifiers**
+
+```
+Example: EzQKrE6jHg3KbVm1RfLvQ8NcGqZ7sJhXYWxDvP9TnAzM
+```
+
+- Shorter than hex (~44 characters)
+- No ambiguous characters (0, O, I, l)
+- Better for URLs and user input
+
+</Accordion>
+
+<Accordion title="Multihash">
+
+**Self-describing hash format**
+
+```
+Structure: <hash-function-type><digest-length><digest-value>
+```
+
+- Specifies which hash function was used
+- Enables future algorithm upgrades
+- Compatible with IPFS ecosystem
+
+</Accordion>
+
+### Content Hashing Practices
+
+#### File Hashing
+
+```typescript
+// Pseudocode example
+function hashFile(filePath: string): string {
+  const hasher = new BLAKE3();
+  const stream = readFileStream(filePath);
+  
+  for (const chunk of stream) {
+    hasher.update(chunk);
+  }
+  
+  return hasher.finalize().toHex();
+}
+```
+
+<Note>
+  Always hash the raw file contents, not metadata like timestamps or permissions.
+</Note>
+
+#### Structured Data Hashing
+
+For JSON and other structured data:
+
+1. **Canonicalization**: Use deterministic JSON serialization
+2. **Normalization**: Sort object keys alphabetically
+3. **Consistency**: Use consistent whitespace (prefer no whitespace)
+4. **Encoding**: Always use UTF-8 encoding
+
+```typescript
+// Example: Hashing JSON data
+function hashJSON(data: object): string {
+  // Canonical JSON: sorted keys, no whitespace
+  const canonical = JSON.stringify(data, Object.keys(data).sort(), 0);
+  return BLAKE3.hash(canonical).toHex();
+}
+```
+
+#### Merkle Trees
+
+For large datasets and verification efficiency:
+
+<Accordion title="Merkle Tree Structure">
+
+```
+         Root Hash
+        /          \
+    Hash AB      Hash CD
+    /    \        /    \
+  Hash A  Hash B Hash C Hash D
+   |       |      |       |
+  Data A  Data B Data C Data D
+```
+
+**Benefits:**
+- Efficient partial verification
+- Incremental updates
+- Proof of inclusion/exclusion
+- Scalable for large datasets
+
+**Implementation:**
+- Use BLAKE3 for leaf and internal node hashing
+- Store tree structure alongside root hash
+- Support proof generation and verification
+
+</Accordion>
+
+### Hash Verification Protocol
+
+#### Basic Verification
+
+```typescript
+interface HashVerification {
+  data: Buffer;
+  expectedHash: string;
+  algorithm: 'blake3' | 'sha256';
+}
+
+function verify(verification: HashVerification): boolean {
+  const computed = hash(verification.data, verification.algorithm);
+  return computed === verification.expectedHash;
+}
+```
+
+#### Verification Metadata
+
+When transmitting hashed data, include:
+
+```json
+{
+  "data": "<data or reference>",
+  "hash": "a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a",
+  "algorithm": "blake3",
+  "encoding": "hex",
+  "timestamp": "2026-03-03T12:00:00Z",
+  "signature": "<optional cryptographic signature>"
+}
+```
+
+## Rationale
+
+### Design Decisions
+
+<Accordion title="Why BLAKE3?">
+
+**Performance**: 10x faster than SHA-256, crucial for large-scale data processing.
+
+**Security**: Modern design with strong security guarantees and no known vulnerabilities.
+
+**Parallelism**: Native support for parallel processing, leveraging modern hardware.
+
+**Tree Structure**: Built-in Merkle tree support for efficient verification.
+
+**Future-Proof**: Designed with lessons learned from previous hash functions.
+
+</Accordion>
+
+<Accordion title="Why support multiple algorithms?">
+
+- **Compatibility**: Integration with existing systems (Bitcoin, Ethereum, IPFS)
+- **Migration**: Smooth transition from legacy systems
+- **Flexibility**: Different algorithms for different security/performance requirements
+- **Future-Proofing**: Easy to add new algorithms if needed
+
+</Accordion>
+
+<Accordion title="Why standardize representation formats?">
+
+- **Interoperability**: Consistent hashes across different implementations
+- **User Experience**: Appropriate formats for different contexts (debugging vs display)
+- **Efficiency**: Compact formats reduce storage and bandwidth requirements
+
+</Accordion>
+
+<Accordion title="Why canonical JSON?">
+
+Different JSON serializations of the same data produce different hashes. Canonicalization ensures the same data always produces the same hash, critical for verification and deduplication.
+
+</Accordion>
+
+### Alternative Approaches Considered
+
+- **SHA-3**: Secure but slower than BLAKE3, less parallelizable
+- **BLAKE2**: Fast but BLAKE3 offers better performance and features
+- **Custom hash function**: Maximum control but requires extensive security review
+- **Multiple primary algorithms**: Adds complexity without clear benefits
+
+## Backwards Compatibility
+
+Services using different hashing algorithms can continue operating:
+
+1. **Support Period**: 12-month transition period for adopting BLAKE3
+2. **Multi-Algorithm Support**: Services may support multiple algorithms during transition
+3. **Hash Metadata**: Always include algorithm identifier with hashes
+4. **Migration Tools**: Provide tools to rehash existing data
+
+### Migration Strategy
+
+<Accordion title="Phase 1: Introduction (Months 1-3)">
+- Release specification and reference implementations
+- Provide migration tools and documentation
+- Services begin BLAKE3 implementation
+</Accordion>
+
+<Accordion title="Phase 2: Dual Support (Months 4-9)">
+- Services support both old and new algorithms
+- New data uses BLAKE3
+- Gradual rehashing of existing data
+</Accordion>
+
+<Accordion title="Phase 3: BLAKE3 Primary (Months 10-12)">
+- BLAKE3 becomes default
+- Legacy algorithm support maintained for compatibility
+- Clear migration path for remaining services
+</Accordion>
+
+<Accordion title="Phase 4: Full Adoption (Month 12+)">
+- BLAKE3 required for new services
+- Legacy support maintained only for specific compatibility needs
+</Accordion>
+
+## Security Considerations
+
+### Hash Function Security
+
+<Accordion title="Collision Resistance">
+BLAKE3 provides strong collision resistance. With a 256-bit output, finding collisions is computationally infeasible with current and foreseeable technology.
+</Accordion>
+
+<Accordion title="Preimage Resistance">
+Given a hash, it should be computationally infeasible to find input data that produces that hash. BLAKE3 provides strong preimage resistance.
+</Accordion>
+
+<Accordion title="Algorithm Agility">
+The multihash format allows for algorithm upgrades if vulnerabilities are discovered in the future, without breaking existing systems.
+</Accordion>
+
+### Implementation Security
+
+<Note>
+  Use well-tested cryptographic libraries. Do not implement hash functions from scratch.
+</Note>
+
+<Accordion title="Timing Attacks">
+Hash comparison should use constant-time comparison to prevent timing-based attacks when verifying sensitive hashes.
+</Accordion>
+
+<Accordion title="Random Number Generation">
+If hashing is used with salts or nonces, use cryptographically secure random number generators.
+</Accordion>
+
+<Accordion title="Key Derivation">
+For deriving encryption keys from data, use proper key derivation functions (KDFs) like HKDF, not raw hashing.
+</Accordion>
+
+### Operational Security
+
+- **Hash Storage**: Store hashes securely; they can reveal data presence
+- **Transmission**: Always transmit hashes over secure channels
+- **Verification**: Always verify hashes before using data
+- **Updates**: Monitor for security updates to hash function implementations
+
+## Implementation
+
+### Reference Implementations
+
+Official reference implementations provided for:
+
+- **JavaScript/TypeScript**: `@masumi/hash-utils`
+- **Python**: `masumi-hash`
+- **Rust**: `masumi-hash-rs`
+- **Go**: `masumi-hash-go`
+
+### Library Requirements
+
+Compliant implementations must:
+
+1. Support BLAKE3 as primary algorithm
+2. Support SHA-256 for compatibility
+3. Provide hex and base58 encoding
+4. Support multihash format
+5. Include verification utilities
+6. Provide Merkle tree construction and verification
+7. Use constant-time comparison for hash verification
+
+### Testing and Validation
+
+<Accordion title="Test Vectors">
+Standardized test vectors provided for:
+- Empty input
+- Single-byte inputs
+- Common string inputs
+- Large binary data
+- Structured JSON data
+</Accordion>
+
+<Accordion title="Compliance Testing">
+- Automated test suite for implementation validation
+- Performance benchmarks
+- Security testing guidelines
+- Interoperability tests between implementations
+</Accordion>
+
+### Integration Examples
+
+```typescript
+// Example: Service registration with hash verification
+import { hash, verify } from '@masumi/hash-utils';
+
+const serviceMetadata = {
+  name: "My Service",
+  version: "1.0.0",
+  // ... other fields
+};
+
+const metadataHash = hash.blake3(JSON.stringify(serviceMetadata));
+
+// Store to IPFS/Arweave with hash
+await storeMetadata(serviceMetadata, metadataHash);
+
+// Later: verify retrieved data
+const retrieved = await retrieveMetadata();
+const isValid = verify.blake3(JSON.stringify(retrieved), metadataHash);
+```
+
+<Info>
+  This MIP is currently in draft status. Join the discussion on the [MIP repository](https://github.com/masumi-network/masumi-improvement-proposals).
+</Info>
+
+## Copyright
+
+This MIP is licensed under the MIT License.

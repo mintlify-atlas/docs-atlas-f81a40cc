@@ -1,0 +1,160 @@
+---
+title: "MIP-001: Masumi Improvement Proposal (MIP) Process"
+description: "The foundational process for proposing and implementing improvements to the Masumi ecosystem"
+---
+
+## Status
+
+**Accepted** - This MIP defines the standard process for all future MIPs.
+
+## Abstract
+
+MIP-001 establishes the Masumi Improvement Proposal (MIP) Process, a standardized framework for proposing, discussing, and implementing changes to the Masumi ecosystem. This process ensures that all stakeholders can participate in the evolution of the protocol while maintaining clarity, transparency, and systematic evaluation.
+
+## Motivation
+
+As the Masumi ecosystem grows, a structured approach to improvements is essential to:
+
+- Maintain protocol integrity and security
+- Enable transparent community participation
+- Document decisions and their rationale
+- Coordinate implementation across teams and projects
+- Provide historical context for future development
+
+## Specification
+
+### MIP Format
+
+Each MIP must include the following sections:
+
+<Accordion title="Required Sections">
+
+#### Header
+- **MIP Number**: Sequential identifier
+- **Title**: Descriptive title
+- **Author(s)**: Name(s) and contact information
+- **Status**: Current stage in the lifecycle
+- **Type**: Category (Core, Standards, Process, Informational)
+- **Created**: Date of initial submission
+
+#### Body
+- **Abstract**: Brief summary of the proposal
+- **Motivation**: Why this change is needed
+- **Specification**: Detailed technical description
+- **Rationale**: Design decisions and alternatives considered
+- **Backwards Compatibility**: Impact on existing implementations
+- **Security Considerations**: Potential security implications
+- **Implementation**: Reference implementation or guidelines
+
+</Accordion>
+
+### MIP Types
+
+<Accordion title="Core">
+Changes to the core Masumi protocol, including consensus mechanisms, network protocol updates, and fundamental protocol changes.
+</Accordion>
+
+<Accordion title="Standards">
+Application-level standards including API specifications, metadata formats, service interfaces, and interoperability guidelines.
+</Accordion>
+
+<Accordion title="Process">
+Improvements to the MIP process itself or other organizational and governance processes.
+</Accordion>
+
+<Accordion title="Informational">
+General guidelines, design patterns, or information for the community that doesn't require implementation.
+</Accordion>
+
+### MIP Workflow
+
+#### 1. Draft Stage
+
+- Author creates initial proposal using the MIP template
+- Submit as pull request to the MIP repository
+- Proposal receives a MIP number
+- Community discussion begins
+
+#### 2. Review Stage
+
+- Core team and community provide feedback
+- Author iterates on the proposal
+- Technical feasibility is evaluated
+- Security implications are assessed
+
+#### 3. Decision
+
+<Info>
+The core team makes the final decision on acceptance based on community feedback, technical merit, and alignment with Masumi's goals.
+</Info>
+
+- **Accepted**: MIP is approved for implementation
+- **Rejected**: MIP is not approved (with documented rationale)
+- **Deferred**: Decision postponed pending additional information
+
+#### 4. Implementation
+
+- Accepted MIPs move to implementation
+- Reference implementations are developed
+- Documentation is updated
+- Status updated to **Final** when complete
+
+### Editorial Process
+
+MIP editors are responsible for:
+
+- Assigning MIP numbers
+- Ensuring proposals follow the correct format
+- Updating MIP status
+- Maintaining the MIP repository
+
+## Rationale
+
+### Why a Formal Process?
+
+A formal MIP process provides:
+
+- **Transparency**: All proposals are public and documented
+- **Accountability**: Clear ownership and decision tracking
+- **Quality**: Structured review ensures thorough evaluation
+- **Coordination**: Prevents conflicting or duplicate efforts
+- **Historical Record**: Documents the evolution of the protocol
+
+### Design Decisions
+
+<Accordion title="Why GitHub-based?">
+Using GitHub leverages familiar collaboration tools, provides version control, enables threaded discussions, and integrates with existing development workflows.
+</Accordion>
+
+<Accordion title="Why different MIP types?">
+Different types of proposals require different review processes and have different impacts. Categorization helps set appropriate expectations and review criteria.
+</Accordion>
+
+<Accordion title="Why require rationale sections?">
+Documenting design decisions and alternatives helps future contributors understand why certain choices were made, preventing revisiting settled issues.
+</Accordion>
+
+## Backwards Compatibility
+
+As the first MIP, there are no backwards compatibility concerns. This MIP establishes the baseline process for all future proposals.
+
+## Security Considerations
+
+The MIP process itself has minimal security implications. However, individual MIPs must include security considerations sections to ensure potential vulnerabilities are identified and addressed during the review process.
+
+## Implementation
+
+This MIP is implemented through:
+
+- The [masumi-improvement-proposals](https://github.com/masumi-network/masumi-improvement-proposals) GitHub repository
+- MIP template file
+- Contribution guidelines
+- Editorial workflow documentation
+
+<Note>
+  Visit the [MIP repository](https://github.com/masumi-network/masumi-improvement-proposals) to submit your own proposal.
+</Note>
+
+## Copyright
+
+This MIP is licensed under the MIT License.

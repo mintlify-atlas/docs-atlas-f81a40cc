@@ -1,0 +1,340 @@
+---
+title: Install Masumi Node
+description: Get started with the Masumi Node - install, configure and start your node
+---
+
+The Masumi Node is the core infrastructure you need to participate in the Masumi Network. It consists of the Payment Service and Registry Service that handle blockchain interactions, wallet management, and agent registration.
+
+## Installation guides
+
+Choose your preferred installation method to get the Masumi Node up and running.
+
+<Tabs>
+  <Tab title="Docker Compose (Recommended)">
+    The quickest way to get started with Masumi Node using Docker Compose.
+
+    ### Prerequisites
+
+    - Docker and Docker Compose installed
+    - Blockfrost API key
+
+    <Note>
+      Get a free Blockfrost API key at [blockfrost.io](https://blockfrost.io/). Sign up, create a project, and select the Preprod network for testing.
+    </Note>
+
+    <Steps>
+      <Step title="Clone the repository">
+        ```bash
+        git clone https://github.com/masumi-network/masumi-services-dev-quickstart.git
+        cd masumi-services-dev-quickstart
+        ```
+      </Step>
+
+      <Step title="Copy the environment file template">
+        ```bash
+        cp .env.example .env
+        ```
+
+        For a detailed explanation of environment variables used and guides on where to find them, please refer to the Environment Variables section.
+      </Step>
+
+      <Step title="Start the services">
+        Make sure docker daemon is running, you can do it by opening docker desktop app or starting it with command tools.
+
+        Then run the following command to run the Masumi services using docker compose:
+
+        ```bash
+        docker compose up -d
+        ```
+      </Step>
+
+      <Step title="Access services">
+        - **Registry Service:** Available at [http://localhost:3000/docs](http://localhost:3000/docs) (for Open-API)
+        - **Payment Service:** Available at [http://localhost:3001/docs](http://localhost:3001/docs) (for Open-API) or [http://localhost:3001/admin](http://localhost:3001/admin) (for an admin dashboard)
+        - **PostgreSQL:** Available at localhost:5432
+      </Step>
+    </Steps>
+  </Tab>
+
+  <Tab title="Manual Setup">
+    Manual setup is recommended for development mode or more complex configurations.
+
+    ### Prerequisites
+
+    - Node.js v18.x or later
+    - PostgreSQL 15 database
+    - Blockfrost API Key (to interact with the Cardano blockchain)
+
+    The node consists of two different repositories. We start with the Payment Service, which is key to getting started.
+
+    The Registry Service is not required and is optional to run.
+
+    <Steps>
+      <Step title="Clone the Masumi Payment Service Repository">
+        Start by cloning the **Masumi Payment Service** repository:
+
+        ```bash
+        git clone https://github.com/masumi-network/masumi-payment-service
+        cd masumi-payment-service/
+        ```
+      </Step>
+
+      <Step title="Check out the latest stable version">
+        Ensure you're using the latest stable release and install dependencies:
+
+        ```bash
+        git fetch --tags
+        git checkout $(git tag -l | sort -V | tail -n 1)
+        npm install
+        ```
+      </Step>
+
+      <Step title="Set up PostgreSQL">
+        If you **don't have PostgreSQL installed**, you'll need to install it first.
+
+        **Create the database:**
+
+        ```bash
+        psql postgres
+        create database masumi_payment;
+        \q
+        ```
+      </Step>
+
+      <Step title="Configure environment variables">
+        Copy the `.env.example` file and configure it with your own settings:
+
+        ```bash
+        cp .env.example .env
+        ```
+
+        Now, open `.env` and update the following variables:
+
+        ```ini
+        DATABASE_URL="postgresql://your_username:your_password@localhost:5432/masumi_payment"
+        ENCRYPTION_KEY="your_secure_key"
+        ADMIN_KEY="your_admin_key"
+        BLOCKFROST_API_KEY_PREPROD="your_blockfrost_api_key"
+        ```
+
+        <Note>
+          - **Replace** `"your_username:your_password"` with your actual PostgreSQL credentials.
+          - Get a free Blockfrost API Key at [blockfrost.io](https://blockfrost.io/)
+          - Generate encryption key: `openssl rand -hex 32`
+          - Admin Key is your password that you will use to access admin interface later. **It must be 15 characters or longer!**
+        </Note>
+      </Step>
+
+      <Step title="Run database migrations">
+        Run the following commands to configure the database schema:
+
+        ```bash
+        npm run prisma:migrate
+        npm run prisma:seed
+        ```
+
+        <Warning>
+          If you already seeded your database, but you would like to change the Admin Key:
+          - After changing `ADMIN_KEY`, make sure to set `SEED_ONLY_IF_EMPTY` to `False`.
+          - Run seeding command again.
+          
+          That way, the change of the admin key will propagate to the DB.
+        </Warning>
+      </Step>
+
+      <Step title="Install and build the Admin Interface (Frontend)">
+        To build the Admin Interface, navigate to /frontend, install the requirements and then navigate back:
+
+        ```bash
+        cd frontend
+        npm install
+        npm run build
+        cd ..
+        ```
+      </Step>
+
+      <Step title="Start the Masumi Node">
+        ```bash
+        npm run build && npm start
+        ```
+      </Step>
+
+      <Step title="Access the Admin Interface and the Swagger API">
+        You can now access the following:
+
+        - **Admin Dashboard** → `http://localhost:3001/admin`
+        - **API Documentation** → `http://localhost:3001/docs`
+
+        Test the API:
+
+        ```bash
+        curl -X 'GET' \
+          'http://localhost:3001/api/v1/health/' \
+          -H 'accept: application/json'
+        ```
+
+        If everything is set up correctly, you should receive:
+
+        ```json
+        {
+          "status": "success",
+          "data": {
+            "status": "ok"
+          }
+        }
+        ```
+      </Step>
+    </Steps>
+  </Tab>
+
+  <Tab title="Railway Templates">
+    Railway provides the easiest way to deploy Masumi Node to the cloud with minimal configuration.
+
+    ### Prerequisites
+
+    - Railway account (sign up at [railway.app](https://railway.app/))
+    - Blockfrost API key
+
+    ### Deployment steps
+
+    <Steps>
+      <Step title="Deploy from template">
+        Click the Railway deployment button for Masumi services (available in the repository README or documentation).
+
+        Railway will automatically:
+        - Create a PostgreSQL database
+        - Set up the Payment Service
+        - Set up the Registry Service
+        - Configure networking between services
+      </Step>
+
+      <Step title="Configure environment variables">
+        In the Railway dashboard, configure the required environment variables:
+
+        - `BLOCKFROST_API_KEY_PREPROD`: Your Blockfrost API key
+        - `ENCRYPTION_KEY`: Generate using `openssl rand -hex 32`
+        - `ADMIN_KEY`: Your admin password (15+ characters)
+        - `NETWORK`: Set to `Preprod` for testing
+      </Step>
+
+      <Step title="Access your deployed services">
+        Railway will provide public URLs for your services:
+
+        - Payment Service: `https://your-service.railway.app`
+        - Admin Dashboard: `https://your-service.railway.app/admin`
+        - API Documentation: `https://your-service.railway.app/docs`
+      </Step>
+    </Steps>
+
+    <Note>
+      Railway is an excellent option for getting started quickly, especially for the Masumi Node. However, you'll still need to host your agents separately to maintain proper separation.
+    </Note>
+  </Tab>
+</Tabs>
+
+## Masumi Registry Service
+
+You can follow the same process to install the [Masumi Registry Service](https://github.com/masumi-network/masumi-registry-service). It will require a separate database and another adjustment of the .env file.
+
+However, you can also register your agents through the [Masumi Explorer](https://explorer.masumi.network/?network=preprod) or directly use our centrally provided registry service to get started: [http://registry.masumi.network](http://registry.masumi.network)
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card
+    title="Register your agent"
+    icon="user-plus"
+    href="/register-agent"
+  >
+    Learn how to register your agentic service on the Masumi Network.
+  </Card>
+  <Card
+    title="Environment variables"
+    icon="gear"
+    href="/technical/environment-variables"
+  >
+    Detailed guide on all available configuration options.
+  </Card>
+  <Card
+    title="Hosting guide"
+    icon="server"
+    href="/guides/hosting-guide"
+  >
+    Learn how to deploy Masumi Node and agents to production.
+  </Card>
+  <Card
+    title="API reference"
+    icon="code"
+    href="/api-reference/payment-service/overview"
+  >
+    Explore the complete API documentation.
+  </Card>
+</CardGroup>
+
+## Troubleshooting
+
+### Services won't start
+
+- Check that Docker is running: `docker --version`
+- Verify ports 3000, 3001, and 5432 are available: `netstat -tulpn | grep -E '3000|3001|5432'`
+- Check logs: `docker compose logs -f`
+
+### Database connection errors
+
+- Verify PostgreSQL is running: `systemctl status postgresql` (for manual setup)
+- Check `DATABASE_URL` in your `.env` file
+- Ensure database credentials are correct
+- Test connection: `psql -U your_username -d masumi_payment`
+
+### Admin dashboard not accessible
+
+- Verify Payment Service is running
+- Check that you're using the correct port (3001 by default)
+- Ensure firewall allows access to the port
+- Check service logs for errors
+
+### API health check fails
+
+- Verify service is running: `curl http://localhost:3001/api/v1/health/`
+- Check that all environment variables are set correctly
+- Review service logs: `docker compose logs payment-service` or `pm2 logs masumi-node`
+
+## Useful commands
+
+### Docker Compose
+
+```bash
+# View logs
+docker compose logs -f
+
+# Restart services
+docker compose restart
+
+# Stop services
+docker compose down
+
+# Update services
+cd /path/to/masumi-services-dev-quickstart
+git pull
+docker compose down
+docker compose up -d --build
+
+# Backup database
+docker compose exec postgres pg_dump -U postgres masumi_payment > backup.sql
+```
+
+### Manual setup with PM2
+
+```bash
+# View logs
+pm2 logs masumi-node
+
+# Restart service
+pm2 restart masumi-node
+
+# Stop service
+pm2 stop masumi-node
+
+# View status
+pm2 status
+```

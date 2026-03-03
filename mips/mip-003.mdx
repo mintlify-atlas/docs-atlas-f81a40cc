@@ -1,0 +1,354 @@
+---
+title: "MIP-003: Agentic Service API Standard"
+description: "Standardized API specification for agentic services in the Masumi ecosystem"
+---
+
+## Status
+
+**Draft** - This proposal is currently under review and discussion.
+
+## Abstract
+
+MIP-003 proposes a standardized API specification for agentic services operating within the Masumi ecosystem. This standard defines common endpoints, request/response formats, authentication mechanisms, and error handling conventions to ensure seamless interoperability between agents and services.
+
+## Motivation
+
+A standardized API interface is critical for:
+
+- **Interoperability**: Enable agents to interact with any compliant service
+- **Composability**: Allow services to be combined and orchestrated
+- **Developer Experience**: Reduce integration complexity and learning curve
+- **Reliability**: Establish consistent error handling and status reporting
+- **Scalability**: Support efficient service discovery and load balancing
+
+<Info>
+  Standardized APIs enable true composability and automation in the agentic ecosystem.
+</Info>
+
+## Specification
+
+### Base API Requirements
+
+All compliant agentic services must implement:
+
+<Accordion title="Core Endpoints">
+
+#### Health Check
+```
+GET /health
+```
+Returns service health status and availability.
+
+**Response:**
+```json
+{
+  "status": "healthy",
+  "version": "1.0.0",
+  "uptime": 3600,
+  "timestamp": "2026-03-03T12:00:00Z"
+}
+```
+
+#### Service Info
+```
+GET /info
+```
+Returns service metadata and capabilities.
+
+**Response:**
+```json
+{
+  "name": "Service Name",
+  "version": "1.0.0",
+  "capabilities": ["capability1", "capability2"],
+  "endpoints": ["/execute", "/status"],
+  "authentication": "required"
+}
+```
+
+#### Execute
+```
+POST /execute
+```
+Executes the primary service functionality.
+
+**Request:**
+```json
+{
+  "action": "string",
+  "parameters": {},
+  "context": {},
+  "callback": "string (optional)"
+}
+```
+
+**Response:**
+```json
+{
+  "taskId": "string",
+  "status": "pending|completed|failed",
+  "result": {},
+  "error": "string (if failed)"
+}
+```
+
+#### Task Status
+```
+GET /status/:taskId
+```
+Returns status of an asynchronous task.
+
+**Response:**
+```json
+{
+  "taskId": "string",
+  "status": "pending|running|completed|failed",
+  "progress": 0.75,
+  "result": {},
+  "error": "string (if failed)",
+  "createdAt": "ISO8601",
+  "completedAt": "ISO8601"
+}
+```
+
+</Accordion>
+
+### Authentication
+
+<Accordion title="Supported Authentication Methods">
+
+#### API Key
+```
+Authorization: Bearer <api_key>
+```
+
+#### JWT Token
+```
+Authorization: Bearer <jwt_token>
+```
+
+#### Wallet Signature
+```
+X-Wallet-Address: <address>
+X-Signature: <signature>
+X-Timestamp: <timestamp>
+```
+
+Services must support at least one authentication method and clearly document requirements in their metadata.
+
+</Accordion>
+
+### Request/Response Format
+
+#### Content Type
+- Primary: `application/json`
+- Alternative: `application/x-msgpack` for performance-critical applications
+
+#### Standard Headers
+
+**Request Headers:**
+```
+Content-Type: application/json
+Authorization: Bearer <token>
+X-Request-ID: <uuid>
+X-Client-Version: <version>
+```
+
+**Response Headers:**
+```
+Content-Type: application/json
+X-Request-ID: <uuid>
+X-RateLimit-Limit: <number>
+X-RateLimit-Remaining: <number>
+X-RateLimit-Reset: <timestamp>
+```
+
+### Error Handling
+
+<Note>
+  Consistent error handling is crucial for reliable agent automation.
+</Note>
+
+Standard error response format:
+
+```json
+{
+  "error": {
+    "code": "ERROR_CODE",
+    "message": "Human-readable error message",
+    "details": {},
+    "timestamp": "ISO8601",
+    "requestId": "string"
+  }
+}
+```
+
+#### Standard Error Codes
+
+<Accordion title="Client Errors (4xx)">
+
+- `400 BAD_REQUEST`: Invalid request format or parameters
+- `401 UNAUTHORIZED`: Authentication required or failed
+- `403 FORBIDDEN`: Insufficient permissions
+- `404 NOT_FOUND`: Resource or endpoint not found
+- `429 RATE_LIMIT_EXCEEDED`: Too many requests
+
+</Accordion>
+
+<Accordion title="Server Errors (5xx)">
+
+- `500 INTERNAL_ERROR`: Unexpected server error
+- `503 SERVICE_UNAVAILABLE`: Service temporarily unavailable
+- `504 TIMEOUT`: Request processing timeout
+
+</Accordion>
+
+### Asynchronous Operations
+
+For long-running operations:
+
+1. **Immediate Response**: Return 202 Accepted with task ID
+2. **Status Polling**: Client polls `/status/:taskId` endpoint
+3. **Callbacks**: Optional webhook callback when task completes
+4. **WebSocket**: Optional real-time status updates via WebSocket
+
+### Versioning
+
+API versioning strategy:
+
+- **URL-based**: `/v1/execute`, `/v2/execute`
+- **Header-based**: `Accept: application/vnd.masumi.v1+json`
+- **Deprecation**: 6-month notice period for deprecated versions
+
+## Rationale
+
+### Design Decisions
+
+<Accordion title="Why RESTful API?">
+REST is widely adopted, well-understood, has extensive tooling support, and works well with HTTP infrastructure (caching, load balancing, etc.).
+</Accordion>
+
+<Accordion title="Why JSON as primary format?">
+JSON provides human readability, universal language support, and is the de facto standard for web APIs. MessagePack support for performance-critical use cases.
+</Accordion>
+
+<Accordion title="Why require health and info endpoints?">
+These enable automatic service discovery, health monitoring, and capability negotiation without requiring external metadata lookups.
+</Accordion>
+
+<Accordion title="Why support asynchronous operations?">
+Many agentic services involve long-running computations or external dependencies. Async support prevents timeout issues and enables better resource utilization.
+</Accordion>
+
+<Accordion title="Why multiple authentication methods?">
+Different use cases require different security models. Supporting multiple methods (API keys for simplicity, wallet signatures for decentralization) provides flexibility.
+</Accordion>
+
+### Alternative Approaches Considered
+
+- **gRPC**: More efficient but less accessible, requires code generation
+- **GraphQL**: Flexible but adds complexity for simple services
+- **WebSocket-only**: Real-time benefits but harder to scale and debug
+- **Custom binary protocol**: Maximum efficiency but poor interoperability
+
+## Backwards Compatibility
+
+As a new standard, no backwards compatibility concerns exist. Services implementing this standard should:
+
+1. Version their APIs from the start
+2. Maintain old versions during transition periods
+3. Provide migration guides for clients
+
+## Security Considerations
+
+### Authentication and Authorization
+
+<Accordion title="Token Security">
+- Use HTTPS for all communications
+- Implement token expiration and rotation
+- Support token revocation
+- Rate limit authentication attempts
+</Accordion>
+
+<Accordion title="Input Validation">
+- Validate all input parameters
+- Sanitize user-provided data
+- Implement request size limits
+- Prevent injection attacks
+</Accordion>
+
+<Accordion title="Rate Limiting">
+- Implement per-user rate limits
+- Protect against DDoS attacks
+- Provide clear rate limit information in responses
+- Consider different limits for authenticated vs anonymous users
+</Accordion>
+
+<Accordion title="Data Privacy">
+- Log only necessary information
+- Encrypt sensitive data
+- Comply with data protection regulations
+- Provide data deletion mechanisms
+</Accordion>
+
+### Additional Considerations
+
+- **CORS**: Configure appropriately for web-based clients
+- **CSRF**: Implement CSRF protection for state-changing operations
+- **Audit Logging**: Log security-relevant events
+- **Dependencies**: Keep dependencies updated for security patches
+
+## Implementation
+
+### Reference Implementation
+
+A reference implementation includes:
+
+- OpenAPI/Swagger specification
+- Server implementation in popular languages (TypeScript, Python, Rust)
+- Client SDKs for major platforms
+- Testing tools and compliance checkers
+- Example services demonstrating best practices
+
+### Compliance Levels
+
+<Accordion title="Level 1: Basic Compliance">
+- Implement core endpoints (/health, /info, /execute)
+- Support at least one authentication method
+- Use standard error format
+- Return proper HTTP status codes
+</Accordion>
+
+<Accordion title="Level 2: Full Compliance">
+- All Level 1 requirements
+- Support asynchronous operations
+- Implement rate limiting
+- Provide comprehensive documentation
+- Support API versioning
+</Accordion>
+
+<Accordion title="Level 3: Advanced">
+- All Level 2 requirements
+- Support multiple authentication methods
+- Implement WebSocket for real-time updates
+- Provide client SDKs
+- Support MessagePack format
+- Comprehensive monitoring and metrics
+</Accordion>
+
+### Testing and Validation
+
+Compliance can be verified using:
+
+- Automated API testing suite
+- OpenAPI validator
+- Security scanning tools
+- Performance benchmarking tools
+
+<Info>
+  This MIP is currently in draft status. Participate in the discussion on the [MIP repository](https://github.com/masumi-network/masumi-improvement-proposals).
+</Info>
+
+## Copyright
+
+This MIP is licensed under the MIT License.

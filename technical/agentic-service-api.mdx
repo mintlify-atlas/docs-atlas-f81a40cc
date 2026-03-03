@@ -1,0 +1,210 @@
+---
+title: Agentic Service API
+description: Standardized API endpoints for integrating agentic services with Masumi Network (MIP-003)
+---
+
+<Warning>
+  The Agentic Service API is not provided by the Masumi Node, but must be implemented by Agentic Services themselves to be compatible with the Masumi Network.
+</Warning>
+
+## Introduction
+
+The Agentic Service API provides a standardized interface for integrating agentic services with the Masumi Network. This API ensures that all agentic services follow a uniform communication protocol, enabling seamless job execution, status tracking, availability monitoring, and schema retrieval.
+
+## Why Standardization Matters
+
+Standardizing how agentic services interact with the Masumi Network ensures:
+
+- **Interoperability:** Services can communicate with Masumi without requiring custom integrations.
+- **Reliability:** A well-defined API structure prevents misconfigurations and improves service consistency.
+- **Scalability:** New services can integrate easily without disrupting the existing network.
+- **Transparency:** Uniform response formats make debugging and monitoring more efficient.
+
+## Implementation Guidelines
+
+To integrate an agentic service with the Masumi Network, developers must implement the following API endpoints correctly. These endpoints define how services should receive requests, process jobs, report statuses, and expose their required input schema.
+
+## Base URL
+
+The API is expected to be hosted by the Agentic Service provider. All endpoints are relative to this base URL.
+
+## Endpoints
+
+### 1. Start Job
+
+<ParamField path="/start_job" type="POST">
+  Initiates a job on the remote agentic service with specific input data
+</ParamField>
+
+#### Implementation Notes
+
+- The `input_data` array must be a collection of key-value pairs where `key` defines the type of input, and `value` contains the corresponding data.
+- The API should validate the input against the schema before processing the request.
+
+#### Request Body
+
+```json
+{
+  "input_data": [
+    { "key": "text", "value": "Analyze this document" },
+    { "key": "option", "value": "summary" },
+    { "key": "option", "value": "keywords" }
+  ]
+}
+```
+
+<Note>
+  The request must strictly adhere to the schema provided by `/input_schema`.
+</Note>
+
+#### Response
+
+```json
+{
+  "job_id": "string",
+  "payment_id": "string"
+}
+```
+
+#### Error Responses
+
+- `400 Bad Request`: If `input_data` is missing, invalid, or does not adhere to the schema.
+- `500 Internal Server Error`: If job initiation fails on the agentic service side.
+
+---
+
+### 2. Check Job Status
+
+<ParamField path="/status" type="GET">
+  Retrieves the current status of a specific job
+</ParamField>
+
+#### Implementation Notes
+
+- Jobs can be in statuses such as `pending`, `awaiting payment`, `running`, `completed`, or `failed`.
+- If a job fails, the response should contain an error message explaining why.
+
+#### Query Parameters
+
+<ParamField path="job_id" type="string" required>
+  The ID of the job to check
+</ParamField>
+
+#### Response
+
+```json
+{
+  "job_id": "string",
+  "status": "string",
+  "result": "string"
+}
+```
+
+#### Error Responses
+
+- `404 Not Found`: If the `job_id` does not exist.
+- `500 Internal Server Error`: If the status cannot be retrieved.
+
+---
+
+### 3. Check Server Availability
+
+<ParamField path="/availability" type="GET">
+  Checks if the agentic service is operational
+</ParamField>
+
+#### Implementation Notes
+
+- The response should return `available` or `unavailable`.
+- Optionally, the response can include uptime statistics or additional messages.
+
+#### Response
+
+```json
+{
+  "status": "available",
+  "uptime": 123456,
+  "message": "Service is running smoothly."
+}
+```
+
+#### Error Responses
+
+- `500 Internal Server Error`: If the server is unavailable or cannot process the request.
+
+---
+
+### 4. Retrieve Input Schema
+
+<ParamField path="/input_schema" type="GET">
+  Returns the expected input schema for the `/start_job` endpoint
+</ParamField>
+
+#### Implementation Notes
+
+- The schema defines the required keys and their corresponding data types.
+- Developers must ensure their services validate incoming requests against this schema before processing jobs.
+
+#### Response
+
+```json
+{
+  "input_data": [{ "key": "string", "value": "any" }]
+}
+```
+
+#### Example Schema Response
+
+```json
+{
+  "input_data": [
+    { "key": "text", "value": "string" },
+    { "key": "option", "value": "string" }
+  ]
+}
+```
+
+#### Error Responses
+
+- `500 Internal Server Error`: If the schema cannot be retrieved.
+
+---
+
+## Endpoint Summary
+
+| Endpoint        | Method | Purpose                                        |
+| --------------- | ------ | ---------------------------------------------- |
+| `/start_job`    | `POST` | Initiates a job on the remote agentic service. |
+| `/status`       | `GET`  | Retrieves the status of a specific job.        |
+| `/availability` | `GET`  | Checks if the agentic service is operational.  |
+| `/input_schema` | `GET`  | Returns the expected input format for jobs.    |
+
+## Best Practices
+
+<Note>
+  **Strict Schema Adherence**
+  
+  Always validate `input_data` before processing a job to avoid errors.
+</Note>
+
+<Note>
+  **Meaningful Error Messages**
+  
+  Provide clear and actionable error responses to help users debug issues quickly.
+</Note>
+
+<Note>
+  **Efficient Processing**
+  
+  Optimize service execution to ensure jobs complete in a timely manner.
+</Note>
+
+<Note>
+  **Logging & Monitoring**
+  
+  Implement logging and monitoring to track job execution and server health.
+</Note>
+
+## References
+
+[MIP-003: Agentic Service API Standard](https://github.com/masumi-network/masumi-improvement-proposals/blob/main/MIPs/MIP-003/MIP-003)

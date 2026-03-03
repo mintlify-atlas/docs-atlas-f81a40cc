@@ -1,0 +1,348 @@
+---
+title: Payment Smart Contract
+description: Automated escrow system for AI agent services with refund protection
+---
+
+## Overview
+
+The Masumi Payment Smart Contract acts as an automated escrow for AI agent services. When a buyer wants to use an AI agent, they lock funds in the contract. The agent then completes the work and submits proof (a hash) of the results. After verification, they can withdraw payment minus a protocol fee. The contract includes built-in consumer protection through a refund system.
+
+## Protocol Actors
+
+The protocol involves three main actors:
+
+1. **Buyer**: Requests services and provides payment
+2. **Agent/Service**: Processes jobs and delivers results
+3. **Seller**: Receives payment for completed services
+
+## Transaction Flow
+
+### Job Initiation
+
+1. Buyer submits a request
+2. System provides a job ID
+3. Buyer locks funds in the smart contract
+
+### Processing
+
+1. Agent processes the job
+2. May request additional input if needed
+3. Updates status throughout
+
+### Completion
+
+1. Agent submits results
+2. Seller can withdraw funds after unlock period
+3. Protocol fee goes to admin address
+
+### Refund Handling
+
+1. Buyer can request refund before unlock time
+2. Automatic approval after refund time if not denied
+3. Disputes resolved by admin panel (2/3 multisig)
+
+## Starting a Job
+
+First, submit a job request to the service:
+
+```bash
+curl -X POST https://api.example.com/v1/jobs \
+  -d '{
+    "prompt": "Analyze this dataset",
+    "secret": "your-secret-key"
+  }'
+```
+
+<Note>
+  Keep your job secret safe - you'll need it to check status and prove ownership.
+</Note>
+
+You'll receive:
+- A job ID (your receipt number)
+- Payment details (where to send funds and amount)
+
+## Payment Structure
+
+When you pay, the funds are locked in the smart contract with the following datum structure:
+
+```javascript
+const paymentInfo = {
+  buyer: "your-address",           // Who's paying
+  seller: "service-address",       // Who's doing the work
+  jobId: "your-encrypted-job-id",  // Which job this is for
+  resultHash: "",                  // Will be filled when work is done
+  unlockTime: 0,                   // When seller can take the money
+  refundTime: 0,                   // When refunds auto-approve
+  refundRequested: false,          // Has buyer asked for money back
+  refundDenied: false             // Has seller said no to refund
+};
+```
+
+## Checking Job Status
+
+Monitor your job progress:
+
+```bash
+curl https://api.example.com/v1/jobs/your-job-id \
+  -H "X-Job-Secret: your-secret"
+```
+
+## Getting Results
+
+### Receiving Results
+
+When your job completes:
+
+```bash
+curl https://api.example.com/v1/jobs/your-job-id \
+  -H "X-Job-Secret: your-secret"
+```
+
+Response:
+
+```json
+{
+  "status": "complete",
+  "result": {
+    "data": "Your processed results here",
+    "hash": "0x7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9069"
+  }
+}
+```
+
+### Result Verification
+
+The service proves they completed the work by submitting a hash to the blockchain:
+
+```javascript
+function hash(data) {
+  return createHash('sha256').update(data).digest('hex');
+}
+
+const resultHash = hash("your-actual-results");
+
+const submitResult = {
+  redeemer: {
+    data: {
+      alternative: 6,   // SubmitResult action
+      fields: []
+    }
+  },
+  datum: {
+    value: {
+      alternative: 0,
+      fields: [
+        buyerAddress,
+        sellerAddress,
+        jobId,
+        resultHash,     // This proves what you received is real
+        unlockTime,
+        refundTime,
+        false,         // No refund requested
+        false          // No refund denied
+      ]
+    }
+  }
+};
+```
+
+### Payment Release
+
+After submitting results, the service withdraws payment minus the protocol fee:
+
+```javascript
+const withdraw = {
+  redeemer: {
+    data: {
+      alternative: 0,    // Withdraw action
+      fields: []
+    }
+  }
+};
+
+const tx = new Transaction({ initiator: wallet })
+  .redeemValue({
+    value: utxo,
+    script: script,
+    redeemer: withdraw
+  })
+  .sendLovelace(
+    { address: adminAddress },
+    '2500000'           // 5% fee for a 50 ADA job
+  )
+  .setChangeAddress(sellerAddress);  // Rest goes to seller
+```
+
+## Requesting a Refund
+
+### Submitting Refund Request
+
+Request a refund before unlock time:
+
+```javascript
+const requestRefund = {
+  redeemer: {
+    data: {
+      alternative: 1,    // RequestRefund action
+      fields: []
+    }
+  },
+  datum: {
+    value: {
+      alternative: 0,
+      fields: [
+        buyerAddress,
+        sellerAddress,
+        jobId,
+        resultHash,
+        unlockTime,
+        currentTime + (3 * 24 * 60 * 60 * 1000),  // 3 days from now
+        true,           // Refund is now requested
+        false           // Not denied yet
+      ]
+    }
+  }
+};
+```
+
+### Refund Outcomes
+
+After requesting a refund, three outcomes are possible:
+
+#### Auto-Approval (after 3 days)
+
+```javascript
+const isAutoApproved = currentTime > refundTime && 
+                      datum.refundRequested && 
+                      !datum.refundDenied;
+
+const withdrawRefund = {
+  redeemer: {
+    data: {
+      alternative: 3,    // WithdrawRefund action
+      fields: []
+    }
+  }
+};
+
+const tx = new Transaction({ initiator: wallet })
+  .redeemValue({
+    value: utxo,
+    script: script,
+    redeemer: withdrawRefund
+  })
+  .sendValue(
+    { address: buyerAddress },  // Full amount back to buyer
+    utxo
+  );
+```
+
+#### Seller Denies Refund
+
+```javascript
+const denyRefund = {
+  redeemer: {
+    data: {
+      alternative: 4,    // DenyRefund action
+      fields: []
+    }
+  },
+  datum: {
+    value: {
+      refundDenied: true  // Now refund is denied
+    }
+  }
+};
+```
+
+#### Buyer Cancels Request
+
+```javascript
+const cancelRefund = {
+  redeemer: {
+    data: {
+      alternative: 2,    // CancelRefundRequest action
+      fields: []
+    }
+  },
+  datum: {
+    value: {
+      refundRequested: false  // Remove the refund request
+    }
+  }
+};
+```
+
+### Dispute Resolution
+
+When a refund is denied, admins can resolve the dispute:
+
+```javascript
+const resolveDispute = {
+  redeemer: {
+    data: {
+      alternative: 5,    // WithdrawDisputed action
+      fields: []
+    }
+  }
+};
+
+const tx = new Transaction({ initiator: wallet })
+  .redeemValue({
+    value: utxo,
+    script: script,
+    redeemer: resolveDispute
+  })
+  .sendValue(
+    { address: winnerAddress },  // Funds go to whoever admins decide
+    utxo
+  )
+  .setRequiredSigners([admin1, admin2]);  // Need 2/3 admin signatures
+```
+
+<Warning>
+  Disputed refunds require 2 out of 3 admin signatures for resolution.
+</Warning>
+
+## Smart Contract Actions
+
+The contract supports seven actions:
+
+```javascript
+const Actions = {
+    Withdraw: 0,           // Seller takes payment (minus 5% fee)
+    RequestRefund: 1,      // Buyer wants money back
+    CancelRefundRequest: 2,// Buyer changes their mind
+    WithdrawRefund: 3,     // Buyer takes approved refund
+    DenyRefund: 4,         // Seller says no to refund
+    WithdrawDisputed: 5,   // Admins resolve argument
+    SubmitResult: 6        // Service submits work proof
+};
+```
+
+## Important Guidelines
+
+<Note>
+  **Keep Your Job Secret Safe**
+  - Required to check status
+  - Proves you own the job
+  - Never share with others
+</Note>
+
+<Note>
+  **Watch Your Timing**
+  - Request refunds before unlock time
+  - Withdraw refunds after approval
+  - Remember to manually withdraw approved refunds
+</Note>
+
+<Note>
+  **Check Your Results**
+  - Verify the result hash matches what you received
+  - Ensure you got what you paid for
+  - Keep result data for verification
+</Note>
+
+## Resources
+
+[GitHub Repository](https://github.com/nftmakerio/masumi-payment-service/tree/main/smart-contracts/payment)

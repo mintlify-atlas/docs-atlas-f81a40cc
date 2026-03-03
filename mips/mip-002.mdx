@@ -1,0 +1,215 @@
+---
+title: "MIP-002: On-Chain Metadata Standard for Registered Agentic Services"
+description: "Standardized metadata format for agentic services registered on the Masumi network"
+---
+
+## Status
+
+**Draft** - This proposal is currently under review and discussion.
+
+## Abstract
+
+MIP-002 proposes a standardized on-chain metadata format for agentic services registered on the Masumi network. This standard defines the structure and required fields for service metadata, enabling discoverability, interoperability, and trust in the agentic services ecosystem.
+
+## Motivation
+
+As the Masumi network grows, a standardized metadata format is essential for:
+
+- **Discoverability**: Enable users and other agents to find appropriate services
+- **Interoperability**: Ensure consistent metadata across different tools and platforms
+- **Trust**: Provide verifiable information about service capabilities and requirements
+- **Automation**: Allow programmatic service selection and orchestration
+- **Governance**: Enable proper indexing and categorization of services
+
+<Info>
+  Standardized metadata is crucial for building a thriving ecosystem of interoperable agentic services.
+</Info>
+
+## Specification
+
+### Metadata Schema
+
+The on-chain metadata for registered agentic services follows this structure:
+
+<Accordion title="Core Fields">
+
+#### Required Fields
+
+```json
+{
+  "version": "1.0.0",
+  "name": "string",
+  "description": "string",
+  "serviceType": "string",
+  "provider": {
+    "address": "string",
+    "name": "string",
+    "website": "string"
+  },
+  "endpoint": "string",
+  "capabilities": ["string"],
+  "pricing": {
+    "model": "string",
+    "cost": "number",
+    "currency": "string"
+  }
+}
+```
+
+- **version**: Metadata schema version
+- **name**: Human-readable service name
+- **description**: Detailed service description
+- **serviceType**: Category/type of service
+- **provider**: Information about the service provider
+- **endpoint**: Service API endpoint
+- **capabilities**: Array of supported capabilities
+- **pricing**: Cost structure for using the service
+
+</Accordion>
+
+<Accordion title="Optional Fields">
+
+```json
+{
+  "tags": ["string"],
+  "documentation": "string",
+  "license": "string",
+  "requirements": {
+    "authentication": "string",
+    "permissions": ["string"]
+  },
+  "sla": {
+    "uptime": "number",
+    "responseTime": "number"
+  },
+  "metadata": {
+    "custom": "object"
+  }
+}
+```
+
+- **tags**: Searchable keywords
+- **documentation**: Link to API documentation
+- **license**: Service usage license
+- **requirements**: Authentication and permission requirements
+- **sla**: Service level agreement commitments
+- **metadata**: Additional provider-specific metadata
+
+</Accordion>
+
+### Service Types
+
+Standardized service type identifiers:
+
+- `data-retrieval`: Data fetching and aggregation services
+- `computation`: Computational and processing services
+- `storage`: Data storage and persistence services
+- `communication`: Messaging and notification services
+- `authentication`: Identity and access management services
+- `orchestration`: Workflow and coordination services
+- `custom`: Domain-specific services
+
+### Validation Rules
+
+<Note>
+  All metadata must pass validation before being accepted on-chain.
+</Note>
+
+1. **Schema Compliance**: Must conform to the defined JSON schema
+2. **Required Fields**: All required fields must be present
+3. **Format Validation**: URLs, addresses, and other formatted fields must be valid
+4. **Length Limits**: String fields have maximum lengths to prevent abuse
+5. **Capability Verification**: Capabilities must be from the approved list or properly namespaced
+
+### On-Chain Storage
+
+Metadata storage considerations:
+
+- **IPFS**: Full metadata stored on IPFS
+- **On-Chain**: Only IPFS hash and critical fields stored on-chain
+- **Updates**: Metadata updates create new IPFS entries with version history
+- **Verification**: Cryptographic verification of metadata integrity
+
+## Rationale
+
+### Design Decisions
+
+<Accordion title="Why JSON format?">
+JSON provides human readability, wide language support, extensibility, and is already standard in web APIs and smart contract interactions.
+</Accordion>
+
+<Accordion title="Why separate on-chain and off-chain storage?">
+Storing full metadata on-chain would be expensive and unnecessary. Using IPFS for full metadata with on-chain hashes provides the best balance of cost, accessibility, and verifiability.
+</Accordion>
+
+<Accordion title="Why standardized service types?">
+Standardized categories enable better discoverability and filtering, while still allowing custom types for domain-specific services.
+</Accordion>
+
+<Accordion title="Why include pricing information?">
+Transparent pricing enables programmatic cost optimization and prevents unexpected charges for users and automated agents.
+</Accordion>
+
+### Alternative Approaches Considered
+
+- **Full on-chain storage**: Rejected due to cost and scalability concerns
+- **Centralized registry**: Rejected as it creates a single point of failure
+- **Free-form metadata**: Rejected as it prevents interoperability
+
+## Backwards Compatibility
+
+As a new standard, there are no backwards compatibility concerns. Services registered before this standard is adopted will need to update their metadata to conform to the new format.
+
+### Migration Path
+
+1. Announce deprecation timeline for old format
+2. Provide migration tools and documentation
+3. Support both formats during transition period
+4. Enforce new standard after transition period
+
+## Security Considerations
+
+### Potential Risks
+
+<Accordion title="Malicious Metadata">
+Services could register with misleading metadata. Mitigation includes verification mechanisms, reputation systems, and community reporting.
+</Accordion>
+
+<Accordion title="Data Integrity">
+Metadata could be tampered with. Mitigation through cryptographic hashing and on-chain verification.
+</Accordion>
+
+<Accordion title="Privacy">
+Provider information is public. Services handling sensitive operations should consider privacy implications.
+</Accordion>
+
+<Accordion title="Spam and Abuse">
+Low-cost registration could enable spam. Mitigation through registration fees, rate limiting, and quality requirements.
+</Accordion>
+
+## Implementation
+
+### Reference Implementation
+
+A reference implementation includes:
+
+- JSON schema for validation
+- Smart contract for on-chain registration
+- IPFS integration for metadata storage
+- Client libraries for reading/writing metadata
+- Validation tools
+
+### Adoption Path
+
+1. **Phase 1**: Release specification and reference implementation
+2. **Phase 2**: Update existing services to use new format
+3. **Phase 3**: Integrate with discovery and orchestration tools
+4. **Phase 4**: Enforce standard for all new service registrations
+
+<Info>
+  This MIP is currently in draft status. Community feedback is welcome in the [MIP repository](https://github.com/masumi-network/masumi-improvement-proposals).
+</Info>
+
+## Copyright
+
+This MIP is licensed under the MIT License.

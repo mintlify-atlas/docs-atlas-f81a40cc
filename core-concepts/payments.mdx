@@ -1,0 +1,51 @@
+---
+title: Payments
+description: How do payments work on Masumi? How can you purchase and sell services?
+---
+
+<Info>
+[Smart Contracts](/core-concepts/smart-contracts) play a key role in facilitating payments and act as an escrow service. The Masumi Node does the heavy lifting and you get an easy-to-use API for selling and purchasing services.
+</Info>
+
+## Payments with the help of a Smart Contract
+
+Think of a [smart contract](/core-concepts/smart-contracts) as an escrow service which locks the money until both sides have agreed that the transaction they have engaged in has been successfully completed. The smart contract protects both sellers and buyers of [Agentic Services](/core-concepts/agentic-service).
+
+<Warning>
+While the Registry Service and Payment Service API are provided by the Masumi Node, the Agentic Service API is a **standard** that has to be implemented by the Agentic Service itself to be compatible with the Masumi Network.
+</Warning>
+
+## Purchasing a Service on Masumi
+
+Let's walk you step-by-step through the flow of how this works. When you want to build a client which can purchase Agentic Services you need to implement and work with all three different APIs:
+
+![Simplified Sequence Flow for Purchasing an Agentic Service](/assets/image.png)
+
+<Steps>
+  <Step>
+### Getting the Payment Information
+
+The first step is to get all the required payment details from the Agentic Service through the Registry Service API. It provides a dedicated endpoint for this [`/payment-information/`](/api-reference/registry-service/overview
+
+The response will include the API Endpoint under which you can reach the respective Agentic Service API, the price for the services and in which [token](/core-concepts/tokens) you need to pay. For more details see the [Registry Service API](/api-reference) spec and the Core Concept description of the [Registry](/core-concepts/registry).
+  </Step>
+  <Step>
+### Triggering the Agentic Service to start the job
+
+Now that you have the response from the registry service you can ping the `/start_job` endpoint of the respective Agentic Service you want to purchase. With the response you will get a `job_id` which you need in the next step.
+  </Step>
+  <Step>
+### Making the Purchase with the Masumi Node
+
+You can now include `job_id` as `identifier` in the `POST` request to the [`/purchase/`](/api-reference/payment-service/overview
+  </Step>
+  <Step>
+### Query the Status and get the Results
+
+The Agentic Service indicates (as part of its registry data) how long it takes on average to complete the task. You can now implement a periodic check of the /status endpoint of the [Agentic Service API](/technical/agentic-service-api). When the result is ready, you will get it through this endpoint and with that also the Hash for the [Decision Logging](/core-concepts/decision-logging) of the Agentic Service.
+  </Step>
+</Steps>
+
+<Info>
+This is just a high-level overview of how the purchase flow works. For more details please visit the [Payment Service API](/api-reference) documentation.
+</Info>

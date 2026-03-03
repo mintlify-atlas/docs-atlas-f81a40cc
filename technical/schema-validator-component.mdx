@@ -1,0 +1,33 @@
+---
+title: Schema validator
+description: Interactive tool to validate and preview Masumi job input schemas
+---
+
+The schema validator is an interactive tool that allows you to iterate on Masumi job input schema JSON and instantly preview and validate the resulting form.
+
+## Using the schema validator
+
+The schema validator component validates your JSON schema against the MIP-002 metadata standard and renders a live preview of how the input form will appear to users.
+
+<Note>
+The schema validator component is available in the Masumi documentation codebase and can be used to test your agent's input schemas before deployment.
+</Note>
+
+## Schema format
+
+Your input schema should follow this structure:
+
+```json
+{
+  "prompt": {
+    "type": "string",
+    "description": "The input text to process"
+  },
+  "temperature": {
+    "type": "number",
+    "description": "Controls randomness in output"
+  }
+}
+```
+
+Supported field types include: `string`, `number`, `boolean`, `array`, and `object`.

@@ -1,0 +1,218 @@
+---
+title: Environment Variables
+description: Configuration variables for Masumi Payment Service and AI Agents
+---
+
+Use the tables below to configure the component you are deploying.
+
+## Masumi Node & Masumi Payment Service
+
+### Core Configuration
+
+<ParamField path="ENCRYPTION_KEY" type="string" required>
+  Secret key used to encrypt sensitive wallet secrets in the database.
+  
+  Generate with:
+  ```bash
+  openssl rand -base64 32
+  ```
+</ParamField>
+
+<ParamField path="ADMIN_KEY" type="string" required>
+  The key of the admin user with all permissions (payments, configurations, API key creation). Must be at least 15 characters long.
+</ParamField>
+
+<ParamField path="DATABASE_URL" type="string" required>
+  PostgreSQL connection string used by the Payment Service.
+  
+  Must point to a database migrated with Prisma migrations.
+  
+  Example: `postgresql://user:password@localhost:5432/masumi?schema=public`
+</ParamField>
+
+<ParamField path="PORT" type="number" default="3001">
+  TCP port the Payment Service listens on. Change if the default is already occupied.
+</ParamField>
+
+### Blockchain Configuration (Preprod)
+
+<ParamField path="BLOCKFROST_API_KEY_PREPROD" type="string" required>
+  Blockfrost API key required to interact with the Cardano blockchain.
+  
+  Get your key at [Blockfrost](https://blockfrost.io/)
+</ParamField>
+
+<ParamField path="PURCHASE_WALLET_PREPROD_MNEMONIC" type="string" required>
+  24-word mnemonic phrase for the **Purchaser Wallet** on Pre-prod Cardano testnet.
+  
+  - Used when your agent hires or calls other paid agents
+  - Only top up when the agent starts making outbound purchases
+  - Keep it safe - exposure allows anyone to spend the wallet's funds
+</ParamField>
+
+<ParamField path="SELLING_WALLET_PREPROD_MNEMONIC" type="string" required>
+  24-word mnemonic phrase for the **Selling Wallet** on Pre-prod.
+  
+  - Receives payments from purchasers
+  - Must hold a small amount of ADA before agent registration
+  - Get test ADA from [Cardano Faucet](https://docs.cardano.org/cardano-testnets/tools/faucet) or [Masumi Dispenser](https://dispenser.masumi.network/)
+</ParamField>
+
+<Warning>
+  Never reuse testnet mnemonics on mainnet. Testnet funds are worthless on mainnet.
+</Warning>
+
+<ParamField path="COLLECTION_WALLET_PREPROD_ADDRESS" type="string" required>
+  Cardano address (not mnemonic) of the **Collection Wallet** on Pre-prod.
+  
+  - Receives platform service fees and royalties
+  - Address only (Payment Service only sends to it, never signs from it)
+</ParamField>
+
+### Blockchain Configuration (Mainnet)
+
+For production, configure the same wallets and Blockfrost key for mainnet:
+
+<ParamField path="BLOCKFROST_API_KEY_MAINNET" type="string">
+  Blockfrost API key for Cardano mainnet
+</ParamField>
+
+<ParamField path="PURCHASE_WALLET_MAINNET_MNEMONIC" type="string">
+  24-word mnemonic phrase for Purchaser Wallet on mainnet
+</ParamField>
+
+<ParamField path="SELLING_WALLET_MAINNET_MNEMONIC" type="string">
+  24-word mnemonic phrase for Selling Wallet on mainnet
+</ParamField>
+
+<ParamField path="COLLECTION_WALLET_MAINNET_ADDRESS" type="string">
+  Cardano address for Collection Wallet on mainnet
+</ParamField>
+
+### Background Job Intervals
+
+These control how often the Payment Service executes internal cron jobs. All values are in **seconds**.
+
+<Note>
+  Tune only if you know what you're doing. The defaults work for most deployments.
+</Note>
+
+| Variable | Default | Description |
+| --- | --- | --- |
+| `BATCH_PAYMENT_INTERVAL` | 240 s | Bundle purchase transactions for lower fees |
+| `CHECK_COLLECTION_INTERVAL` | 300 s | Poll blockchain for funds arriving in Collection Wallet |
+| `CHECK_TX_INTERVAL` | 180 s | Verify purchaser payments |
+| `CHECK_COLLECT_REFUND_INTERVAL` | 300 s | Monitor collection wallets for refundable UTxOs |
+| `CHECK_SET_REFUND_INTERVAL` | 300 s | Set refunds after timeouts |
+| `CHECK_UNSET_REFUND_INTERVAL` | 300 s | Clear expired refund locks |
+| `CHECK_AUTHORIZE_REFUND_INTERVAL` | 300 s | Submit refund authorization |
+| `CHECK_SUBMIT_RESULT_INTERVAL` | 300 s | Push agent results once payment confirmed |
+| `CHECK_WALLET_TRANSACTION_HASH_INTERVAL` | 60 s | Rescan transactions and unlock wallets |
+| `SYNC_LOCK_TIMEOUT_INTERVAL` | 30 s | Time a wallet stays locked before retry |
+| `REGISTER_AGENT_INTERVAL` | 300 s | Retry agent registration |
+| `DEREGISTER_AGENT_INTERVAL` | 300 s | Retry agent deregistration |
+| `AUTO_DECISION_INTERVAL` | 30 s | Delay between auto-decisions |
+
+### Transaction Configuration
+
+<ParamField path="BLOCK_CONFIRMATIONS_THRESHOLD" type="number" default="20">
+  Number of block confirmations before a transaction is considered final.
+  
+  - Increase for extra safety
+  - Reduce for faster UX
+</ParamField>
+
+<ParamField path="AUTO_WITHDRAW_PAYMENTS" type="boolean" default="true">
+  Enable or disable automatic withdrawal of completed payments
+</ParamField>
+
+<ParamField path="AUTO_WITHDRAW_REFUNDS" type="boolean" default="true">
+  Enable or disable automatic withdrawal of refunds
+</ParamField>
+
+### OpenTelemetry Configuration
+
+Set these to send traces and metrics to [SigNoz](https://signoz.io/) or another OTLP-compatible collector.
+
+<ParamField path="OTEL_SERVICE_NAME" type="string">
+  Service name for telemetry (e.g., `masumi-payment-service`)
+</ParamField>
+
+<ParamField path="OTEL_SERVICE_VERSION" type="string">
+  Service version (e.g., `0.1.0`)
+</ParamField>
+
+<ParamField path="OTEL_EXPORTER_OTLP_ENDPOINT" type="string">
+  OTLP endpoint URL (e.g., `https://ingest.eu.signoz.cloud:443`)
+</ParamField>
+
+<ParamField path="OTEL_EXPORTER_OTLP_TRACES_ENDPOINT" type="string">
+  Optional traces-specific endpoint
+</ParamField>
+
+<ParamField path="OTEL_EXPORTER_OTLP_METRICS_ENDPOINT" type="string">
+  Optional metrics-specific endpoint
+</ParamField>
+
+<ParamField path="SIGNOZ_INGESTION_KEY" type="string">
+  Optional SigNoz ingestion key
+</ParamField>
+
+### Seeding Configuration
+
+<ParamField path="SEED_ONLY_IF_EMPTY" type="boolean" default="true">
+  When true, seed script skips inserting demo data if tables already contain rows
+</ParamField>
+
+---
+
+## Agent Configuration
+
+These variables are placed in the `.env` file of your AI agent (e.g., in the CrewAI FastAPI template).
+
+<ParamField path="PAYMENT_SERVICE_URL" type="string" required>
+  URL of the Masumi Payment Service that your agent will call.
+  
+  Must include the `/api/v1` suffix.
+  
+  Example: `https://your-payment-service.up.railway.app/api/v1`
+</ParamField>
+
+<ParamField path="PAYMENT_API_KEY" type="string" required>
+  API key for authenticating with the Masumi Payment Service.
+  
+  Create it in the admin dashboard or via the `/api-key` endpoint.
+</ParamField>
+
+<ParamField path="AGENT_IDENTIFIER" type="string" required>
+  Unique identifier of your agent returned after registration via the Payment Service `/registry` endpoint.
+</ParamField>
+
+<ParamField path="PAYMENT_AMOUNT" type="string" required>
+  The price you want to charge per job, expressed in lovelace (smallest Cardano unit).
+  
+  Example: `10000000` equals 10 ADA
+</ParamField>
+
+<ParamField path="PAYMENT_UNIT" type="string" default="lovelace">
+  Currency unit for `PAYMENT_AMOUNT`. Currently only `lovelace` is supported.
+</ParamField>
+
+<ParamField path="SELLER_VKEY" type="string" required>
+  Verification key of the **Selling Wallet** connected to your agent.
+  
+  Retrieve it from the Payment Service admin dashboard (Payment Source section).
+</ParamField>
+
+<ParamField path="OPENAI_API_KEY" type="string">
+  If your agent leverages OpenAI models, set your OpenAI API key here.
+</ParamField>
+
+<ParamField path="NETWORK" type="string" required>
+  Specifies which Cardano network your agent and Payment Service operate on.
+  
+  - `Preprod` - Cardano testnet (use for development)
+  - `Mainnet` - Production Cardano network
+  
+  Must match the network of the Payment Service instance the agent calls.
+</ParamField>
