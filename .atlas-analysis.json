@@ -1,0 +1,172 @@
+{
+  "projectType": "general",
+  "projectName": "Masumi Network",
+  "projectDescription": "Decentralized protocol for AI agent payments, identity, and collaboration on the blockchain.",
+  "theme": "aspen",
+  "primaryColor": "#7C3AED",
+  "lightColor": "#A78BFA",
+  "darkColor": "#5B21B6",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "quickstart",
+              "install-masumi-node",
+              "register-agent"
+            ]
+          },
+          {
+            "group": "Guides",
+            "pages": [
+              "guides/list-agent-on-sokosumi",
+              "guides/enable-agent-collaboration",
+              "guides/top-up-wallets",
+              "guides/hosting-guide"
+            ]
+          },
+          {
+            "group": "Integrations",
+            "pages": [
+              "integrations/agentic-service-wrapper",
+              "integrations/n8n-node"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Core Concepts",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": [
+              "core-concepts/overview",
+              "core-concepts/agentic-service",
+              "core-concepts/identity",
+              "core-concepts/registry"
+            ]
+          },
+          {
+            "group": "Payments",
+            "pages": [
+              "core-concepts/payments",
+              "core-concepts/agent-to-agent-payments",
+              "core-concepts/wallets",
+              "core-concepts/tokens",
+              "core-concepts/transaction-fees",
+              "core-concepts/refunds-and-disputes"
+            ]
+          },
+          {
+            "group": "Technical",
+            "pages": [
+              "core-concepts/blockchain",
+              "core-concepts/smart-contracts",
+              "core-concepts/utxo",
+              "core-concepts/decision-logging",
+              "core-concepts/environments",
+              "core-concepts/regulatory-compliance"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": [
+              "api-reference/overview"
+            ]
+          },
+          {
+            "group": "Payment Service",
+            "pages": [
+              "api-reference/payment-service/overview"
+            ]
+          },
+          {
+            "group": "Registry Service",
+            "pages": [
+              "api-reference/registry-service/overview"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Technical Documentation",
+        "groups": [
+          {
+            "group": "Smart Contracts",
+            "pages": [
+              "technical/smart-contracts/overview",
+              "technical/smart-contracts/payment-contract",
+              "technical/smart-contracts/registry-contract"
+            ]
+          },
+          {
+            "group": "Standards",
+            "pages": [
+              "technical/agentic-service-api",
+              "technical/registry-metadata-standard",
+              "technical/environment-variables"
+            ]
+          },
+          {
+            "group": "Components",
+            "pages": [
+              "technical/schema-validator-component"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "MIPs",
+        "groups": [
+          {
+            "group": "Proposals",
+            "pages": [
+              "mips/overview",
+              "mips/mip-001",
+              "mips/mip-002",
+              "mips/mip-003",
+              "mips/mip-004"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Decentralized AI agent payments on Cardano blockchain",
+    "Blockchain-backed agent identity and verification",
+    "Agent-to-agent and human-to-agent transaction processing",
+    "Immutable decision logging with cryptographic hashes",
+    "Integration with n8n workflows for payment gating",
+    "Masumi Payment Service for wallet and transaction management",
+    "Masumi Registry Service for agent discovery",
+    "Support for stablecoins and ADA token swapping",
+    "Smart contract infrastructure for escrow and disputes",
+    "Framework-agnostic integration (CrewAI, AutoGen, PhiData, LangGraph)"
+  ],
+  "publicApiSurface": [
+    "Payment Service REST API (wallets, transactions, payments)",
+    "Registry Service REST API (agent registration, querying)",
+    "Agentic Service API Standard (MIP-003 compliance)",
+    "Smart Contracts (Payment Contract, Registry Contract)",
+    "n8n-nodes-masumi-payment package",
+    "Masumi Paywall Trigger node",
+    "Masumi Paywall Respond node",
+    "Masumi Paywall polling node",
+    "Agent registration endpoints",
+    "Payment polling and status endpoints",
+    "Wallet management APIs",
+    "Token swap functionality",
+    "Decision logging APIs",
+    "Registry metadata standard"
+  ]
+}
