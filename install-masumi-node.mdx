@@ -318,7 +318,9 @@ cd /path/to/masumi-services-dev-quickstart
 git pull
 docker compose down
 docker compose up -d --build
+```
 
+```bash
 # Backup database
 docker compose exec postgres pg_dump -U postgres masumi_payment > backup.sql
 ```
